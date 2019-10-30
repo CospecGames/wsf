@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/wsf
+wsf.so
+wsf.dylib
+wsf.dll
+libwsf.a
+wsf.lib
+wsf-test-*
+*.exe
+*.o
+*.obj
+*.lst
+dub.selections.json

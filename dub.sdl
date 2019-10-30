@@ -1,0 +1,6 @@
+name "wsf"
+description "WereShift Format"
+authors "clipsey"
+copyright "Copyright © 2019, Luna Nielsen"
+license "BSL-1.0"
+dependency "taggedalgebraic" version="~>0.11.6"
