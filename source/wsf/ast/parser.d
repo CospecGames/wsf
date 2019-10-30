@@ -1,5 +1,5 @@
-module wsf.parser;
-import wsf.tag;
+module wsf.ast.parser;
+import wsf.ast.tag;
 import wsf.streams.stream;
 import wsf.common;
 
@@ -156,6 +156,5 @@ public:
     Parse the WSF file from the stream
 */
 Tag parse(Stream stream) {
-    Parser p = Parser(stream);
-    return p.parse();
+    return Parser(stream).parse();
 }

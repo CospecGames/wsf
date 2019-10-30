@@ -1,7 +1,8 @@
-module wsf.tag;
+module wsf.ast.tag;
 import taggedalgebraic.taggedunion;
 import std.traits;
-import wsf.parser;
+import wsf.ast.parser;
+import wsf.ast.builder;
 
 
 private alias TagValue = TaggedUnion!WSFTagValue;
@@ -44,7 +45,44 @@ public:
     static Tag parseFile(string file) {
         import wsf.streams.filestream : FileStream;
         import std.stdio : File;
-        return parse(new FileStream(File(file, "r")));
+        FileStream stream = new FileStream(File(file, "r"));
+        scope(exit) stream.close();
+        return parse(stream);
+    }
+
+    /**
+        Parse from WSF file
+    */
+    void buildFile(string file) {
+        import wsf.streams.filestream : FileStream;
+        import std.stdio : File;
+        FileStream stream = new FileStream(File(file, "w"));
+        scope(exit) stream.close();
+        return build(this, stream);
+    }
+
+    /**
+        Gets wether this tag is a compound
+    */
+    @property
+    bool isKindCompound() {
+        return kind() == TagKind.compound_;
+    }
+
+    /**
+        Gets wether this tag is an array
+    */
+    @property
+    bool isKindArray() {
+        return kind() == TagKind.array_;
+    }
+
+    /**
+        Gets wether this tag is a value tag (not a compound or array)
+    */
+    @property
+    bool isKindValue() {
+        return !isKindCompound() && !isKindArray();
     }
 
     this(T)(T value) if (isNumeric!T || is(T == bool) || is(T : string)) {
@@ -178,8 +216,15 @@ public:
         Assign value at index
     */
     void opOpAssign(string op = "~=", T)(T value) {
-        if (kind != TagKind.array_) throw new Exception("Tag is not an array!");
-        this.value.array_Value ~= new Tag(value);
+        if (kind == TagKind.array_) {
+            this.value.array_Value ~= new Tag(value);
+        }
+        static if (is(T : string)) {
+            if (kind == TagKind.string_) {
+                this.value.string_Value ~= value;
+            }
+        }
+        throw new Exception("Type not appendable! (not array or string)");
     }
 
     /**
