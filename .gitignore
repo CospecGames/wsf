@@ -15,3 +15,4 @@ wsf-test-*
 *.lst
 dub.selections.json
 test.bin
+test.wsf

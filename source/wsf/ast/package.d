@@ -13,8 +13,8 @@ import std.stdio;
 unittest {
     Tag myTag = Tag.emptyCompound();
     myTag["test"] = "Test";
-    myTag.buildFile("test.bin");
+    myTag.buildFile("test.wsf");
 
-    Tag readTag = Tag.parseFile("test.bin");
+    Tag readTag = Tag.parseFile("test.wsf");
     assert(myTag["test"] != readTag["test"], "Tags did not match!");
 }

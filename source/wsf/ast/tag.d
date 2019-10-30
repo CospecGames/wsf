@@ -223,7 +223,11 @@ public:
     */
     void opOpAssign(string op = "~=", T)(T value) {
         if (kind == TagKind.array_) {
-            this.value.array_Value ~= new Tag(value);
+            static if (is (T : Tag)) {
+                this.value.array_Value ~= value;
+            } else {
+                this.value.array_Value ~= new Tag(value);
+            }
         }
         static if (is(T : string)) {
             if (kind == TagKind.string_) {
