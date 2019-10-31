@@ -37,6 +37,9 @@ private {
                 // Only allow public members that aren't ignored
                 static if (protection == "public" && !hasUDA!(member, ignore)) {
                     static if (memberName == "seq") {
+
+                        // WSF has a seq tag used for sequential data, if our types match up then we can just use the Tag[] array as a frontend to wsf seq
+                        // Otherwise we should move it to a seq_ tag instead.
                         static if (!is(typeof(member) : Tag[])) {
                             pragma(msg, "WARNING: %s %s collides with WSF seq tag, renaming to seq_".format(typeof(member).stringof, memberName));
                             tag["seq_"] = new Tag(__traits(getMember, data, memberName));
