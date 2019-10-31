@@ -96,7 +96,7 @@ public:
     }
 
     this(T)(T value) if (is(T : Tag[])) {
-        this.value = cast(Tag[])value;
+        this.value = Tag[].init;
     }
 
     this(T)(T value) if (is(T : Tag[string])) {
@@ -123,7 +123,7 @@ public:
 
     static {
         Tag emptyCompound() { return new Tag(cast(Tag[string])null); }
-        Tag emptyArray() { return new Tag(cast(Tag[])null); }
+        Tag emptyArray() { return new Tag(cast(Tag[])[]); }
     }
 
     /**
@@ -228,11 +228,13 @@ public:
             } else {
                 this.value.array_Value ~= new Tag(value);
             }
+            return;
         }
         static if (is(T : string)) {
             if (kind == TagKind.string_) {
                 this.value.string_Value ~= value;
             }
+            return;
         }
         throw new Exception("Type not appendable! (not array or string)");
     }
