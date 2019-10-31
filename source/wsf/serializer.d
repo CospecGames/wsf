@@ -1,7 +1,20 @@
+
+//          Copyright Luna & Cospec 2019.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          https://www.boost.org/LICENSE_1_0.txt)
+
 module wsf.serializer;
 import wsf.ast;
 import std.traits;
 import std.format;
+
+/**
+    UDA
+
+    Marks field to be ignored
+*/
+enum ignore;
 
 private {
     void serializeClassOrStruct(T)(T data, ref Tag tag) {
@@ -24,8 +37,13 @@ private {
                 // Only allow public members that aren't ignored
                 static if (protection == "public" && !hasUDA!(member, ignore)) {
                     static if (memberName == "seq") {
-                        pragma(msg, "WARNING: %s collides with WSF seq tag, renaming to seq_".format(memberName));
-                        tag["seq_"] = new Tag(__traits(getMember, data, memberName));
+                        static if (!is(typeof(member) : Tag[])) {
+                            pragma(msg, "WARNING: %s %s collides with WSF seq tag, renaming to seq_".format(typeof(member).stringof, memberName));
+                            tag["seq_"] = new Tag(__traits(getMember, data, memberName));
+                        } else {
+                            pragma(msg, "seq tag mapped to Tag[] array named 'seq'.");
+                            tag[memberName] = new Tag(__traits(getMember, data, memberName));
+                        }
                     } else {
                         tag[memberName] = new Tag(__traits(getMember, data, memberName));
                     }
@@ -34,14 +52,6 @@ private {
         }
     }
 }
-
-
-/**
-    UDA
-
-    Marks field to be ignored
-*/
-enum ignore;
 
 /**
     Serializes a class or struct
