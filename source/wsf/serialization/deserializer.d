@@ -31,26 +31,35 @@ private {
     }
 
     void deserializeStructOrClass(T)(ref T object, ref Tag tag) {
-        foreach(memberName; FieldNameTuple!T) {
+        static if (hasStaticMember!(T, "deserialize")) {
+            alias deserializerFunc = __traits(getMember, T, "deserialize");
+            static if (is(Parameters!deserializerFunc[0] == T) && is(Parameters!deserializerFunc[1] == Tag)) {
+                T.deserialize(object, tag);
+            } else {
+                static assert(0, "Invalid deserialization function! "~typeof(serializerFunc).stringof);
+            }
+        } else {
+            foreach(memberName; FieldNameTuple!T) {
 
-            alias member = __traits(getMember, object, memberName);
-            enum protection = __traits(getProtection, member);
-            static if (protection == "public" && !hasUDA!(member, ignore)) {
-                if (memberName !in tag) {
-                    if (hasUDA!(member, optional)) continue;
-                    else throw new Exception("Mandetory field "~memberName~" not present.");
-                }
-
-                // Handle sequences
-                static if (memberName == "seq") {
-                    static if (is(member : Tag[])) {
-                        __traits(getMember, object, memberName) = tag[memberName];
-                    } else {
-                        if ("seq_" !in tag) throw new Exception("A seq_ tag could not be found!");
-                        deserializeArray!(typeof(member))(__traits(getMember, object, memberName), tag["seq_"]);
+                alias member = __traits(getMember, object, memberName);
+                enum protection = __traits(getProtection, member);
+                static if (protection == "public" && !hasUDA!(member, ignore)) {
+                    if (memberName !in tag) {
+                        if (hasUDA!(member, optional)) continue;
+                        else throw new Exception("Mandetory field "~memberName~" not present.");
                     }
-                } else {
-                    deserializeMember!(typeof(member))(__traits(getMember, object, memberName), tag[memberName]);
+
+                    // Handle sequences
+                    static if (memberName == "seq") {
+                        static if (is(member : Tag[])) {
+                            __traits(getMember, object, memberName) = tag[memberName];
+                        } else {
+                            if ("seq_" !in tag) throw new Exception("A seq_ tag could not be found!");
+                            deserializeArray!(typeof(member))(__traits(getMember, object, memberName), tag["seq_"]);
+                        }
+                    } else {
+                        deserializeMember!(typeof(member))(__traits(getMember, object, memberName), tag[memberName]);
+                    }
                 }
             }
         }
@@ -75,6 +84,9 @@ private {
     }
 }
 
+/**
+    Deserialize from a WSF tag
+*/
 T deserializeWSF(T)(Tag tag) {
     T val = newEmptyT!T;
     deserializeStructOrClass!T(val, tag);
