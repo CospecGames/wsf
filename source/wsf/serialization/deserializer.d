@@ -21,7 +21,6 @@ private {
             static assert(is(PointerTarget!T == struct), "Pointer did not point to a struct!");
             return new PointerTarget!T;
         } else static if (is(T == class)) {
-            pragma(msg, fullyQualifiedName!T);
             return new T();
         } else static if (is(T == struct)) {
             return *(new T);
