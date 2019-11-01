@@ -7,7 +7,7 @@
 module wsf.ast.parser;
 import wsf.ast.tag;
 import wsf.streams.stream;
-import wsf.common;
+import wsf.ast.common;
 
 /**
     WSF parser

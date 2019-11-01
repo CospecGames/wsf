@@ -7,7 +7,7 @@
 module wsf.ast.builder;
 import wsf.ast.tag;
 import wsf.streams.stream;
-import wsf.common;
+import wsf.ast.common;
 
 /**
     Struct capable of writing a WSF Tag sequence in to a Stream

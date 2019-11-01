@@ -4,18 +4,12 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
-module wsf.serializer;
+module wsf.serialization.serializer;
+import wsf.serialization;
 import wsf.ast;
 import std.traits;
 import std.format;
 import std.range.primitives;
-
-/**
-    UDA
-
-    Marks field to be ignored
-*/
-enum ignore;
 
 private {
     void serializeClassOrStruct(T)(T data, ref Tag tag) {
@@ -26,7 +20,7 @@ private {
 
         static if (isPointer!T) {
             // Handle pointers
-            serializeClassOrStruct(PointerTarget!T)(*data, tag);
+            serializeClassOrStruct!(PointerTarget!T)(*data, tag);
         } else {
             
             //Handle structs or classes
@@ -72,7 +66,7 @@ private {
         static if(isArray!(ElementType!T)){
             
             // Handle multidimensional arrays
-            static foreach(element; array) {
+            foreach(element; array) {
                 //Serialize arrays
                 Tag subTag = Tag.emptyArray();
                 serializeArray(element, subTag);
@@ -109,7 +103,7 @@ private {
                 tag[memberName] = subTag;
             }
 
-        } else static if(isArray!T){
+        } else static if(isArray!T && !is(T : string)) {
 
             //Serialize arrays
             Tag subTag = Tag.emptyArray();

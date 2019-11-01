@@ -203,6 +203,11 @@ public:
         }
     }
 
+    Tag* opBinaryRight(string op = "in")(string index) {
+        if (kind != TagKind.compound_) throw new Exception("Tag is not a compound!");
+        return index in this.value.compound_Value;
+    }
+
     /**
         Assign value at index
     */
