@@ -273,6 +273,8 @@ public:
             return cast(T)value.compound_Value;
         } else static if (is(T == string)) {
             return cast(T)value.string_Value;
+        } else static if (is(T == enum)) {
+            return cast(T)this.get!(OriginalType!T);
         } else {
             assert(0, "Unable to handle type!");
         }
