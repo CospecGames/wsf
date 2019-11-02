@@ -65,8 +65,9 @@ private {
     }
 
     void deserializeAA(T)(ref T object, ref Tag tag) {
-        foreach(string name, value; tag) {
-            object[name] = value.get!(ValueType!T);
+        foreach(string key; tag.compound.keys) {
+            object[key] = ValueType!T.init;
+            deserializeMember(object[key], tag[key]);   
         }
     }
 
