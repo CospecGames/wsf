@@ -43,6 +43,10 @@ struct MyData {
 MyData data = deserializeWSF!MyData(Tag.parseFile("importantData.wsf"));
 ```
 
+## ignore & optional
+The `ignore` UDA will cause the serializer and deserializer to ignore a field
+THe `optional` UDA will cause the deserializer to skip a field if no data was found for it.
+
 ## Notes
 TODO
  * Memory based streams
