@@ -64,6 +64,12 @@ private {
         }
     }
 
+    void deserializeAA(T)(ref T object, ref Tag tag) {
+        foreach(string name, value; tag) {
+            object[name] = value.get!(ValueType!T);
+        }
+    }
+
     void deserializeArray(T)(ref T object, ref Tag tag) {
         foreach(i; 0..object.length) {
             deserializeMember(object[i], tag[i]);
@@ -73,6 +79,8 @@ private {
     void deserializeMember(T)(ref T object, ref Tag tag) {
         static if (is(T == class) || is(T == struct) || isPointer!T) {
             deserializeStructOrClass(object, tag);
+        } else static if (isAssociativeArray!T && is(KeyType!T : string) && !is(object : Tag[string])) {
+            deserializeAA(object, tag);
         } else static if (isArray!T && !is(T : string)) {
             deserializeArray(object, tag);
         } else static if (is(object : Tag)) {

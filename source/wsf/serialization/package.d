@@ -59,15 +59,21 @@ public:
         [0, 0, 0, 0]
     ];
 
+    string[string] aa;
+
 }
 
 unittest {
     import std.stdio : writeln;
     TestStruct* strct = new TestStruct;
     strct.matrix[0][0] = 1;
+    strct.aa = [
+        "Test": "test",
+        "TestB": "test b"
+    ];
 
     Tag serialized = serializeWSF(strct);
     TestStruct deserialized = deserializeWSF!TestStruct(serialized);
-
+    
     assert(*strct == deserialized, "Outputs did not match!");
 }

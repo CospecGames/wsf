@@ -51,14 +51,20 @@ private {
                                 tag[memberName] = __traits(getMember, data, memberName);
                             } else {
                                 pragma(msg, "WARNING: %s %s collides with WSF seq tag, renaming to seq_".format(typeof(member).stringof, memberName));
-                                tag["seq_"] = new Tag(__traits(getMember, data, memberName));
+                                serializeMember!(typeof(member))(__traits(getMember, data, memberName), tag, "seq_");
                             }
                         } else {
-                            serializeMember!(typeof(member), memberName)(__traits(getMember, data, memberName), tag);
+                            serializeMember!(typeof(member))(__traits(getMember, data, memberName), tag, memberName);
                         }
                     }
                 }
             }
+        }
+    }
+
+    void serializeAA(T)(T array, ref Tag tag) {
+        foreach(name, member; array) {
+            serializeMember!(typeof(member))(member, tag, name);
         }
     }
 
@@ -78,14 +84,14 @@ private {
             // Handle final array values
             foreach(element; array) {
 
-                serializeMember!(typeof(element), "", true)(element, tag);
+                serializeMember!(typeof(element), true)(element, tag);
 
             }
 
         }
     }
 
-    void serializeMember(T, string memberName, bool array = false)(T data, ref Tag tag) {
+    void serializeMember(T, bool array = false)(T data, ref Tag tag, string memberName = "") {
         
         static if (isPointer!T) {
 
@@ -103,6 +109,14 @@ private {
                 tag[memberName] = subTag;
             }
 
+        } else static if (isAssociativeArray!T) {
+            Tag subTag = Tag.emptyCompound();
+            serializeAA(data, subTag);
+            static if (array) {
+                tag ~= subTag;
+            } else {
+                tag[memberName] = subTag;
+            }
         } else static if(isArray!T && !is(T : string)) {
 
             //Serialize arrays
