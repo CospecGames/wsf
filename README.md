@@ -20,8 +20,30 @@ myData.seq ~= new Tag("baz");
 myData.buildFile("file.wsf");
 ```
 
+## Serialize struct
+```d
+struct MyData {
+    int x;
+    string y;
+}
+
+// Works for: Structs, classes and pointers to structs
+Tag tag = serializeWSF(MyData(42, "Meaning of Life"));
+writeln(tag.toString());
+```
+
+## Deserialize
+```d
+struct MyData {
+    int x;
+    string y;
+}
+
+// Works for: Structs, classes and pointers to structs
+MyData data = deserializeWSF!MyData(Tag.parseFile("importantData.wsf"));
+```
+
 ## Notes
 TODO
  * Memory based streams
- * Proper struct/class serialization via interface
  * C interface(?)
