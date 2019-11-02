@@ -38,6 +38,11 @@ private:
 
 public:
 
+    enum TestEnum {
+        A = 0,
+        B = 1
+    }
+
     @ignore
     int ignoredTest = 42;
 
@@ -61,6 +66,8 @@ public:
 
     string[string] aa;
 
+    TestEnum enm;
+
 }
 
 unittest {
@@ -71,9 +78,9 @@ unittest {
         "Test": "test",
         "TestB": "test b"
     ];
+    strct.enm = TestStruct.TestEnum.B;
 
     Tag serialized = serializeWSF(strct);
     TestStruct deserialized = deserializeWSF!TestStruct(serialized);
-    
     assert(*strct == deserialized, "Outputs did not match!");
 }
