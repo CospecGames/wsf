@@ -66,12 +66,16 @@ private {
 
     void deserializeAA(T)(ref T object, ref Tag tag) {
         foreach(string key; tag.compound.keys) {
+
+            // Sequential keys cannot be fetched from simple associative arrays
+            if (key == "seq") continue;
             object[key] = ValueType!T.init;
-            deserializeMember(object[key], tag[key]);   
+            deserializeMember!(ValueType!T)(object[key], tag[key]);   
         }
     }
 
     void deserializeArray(T)(ref T object, ref Tag tag) {
+        object.length = tag.length;
         foreach(i; 0..object.length) {
             deserializeMember(object[i], tag[i]);
         }
@@ -86,6 +90,10 @@ private {
             deserializeArray(object, tag);
         } else static if (is(object : Tag)) {
             object = tag;
+        } else static if (is(object : Tag[])) {
+            object = tag.array;
+        } else static if (is(object : Tag[string])) {
+            object = tag.compound;
         } else {
             object = tag.get!T;
         }
