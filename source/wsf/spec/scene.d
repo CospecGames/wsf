@@ -5,15 +5,37 @@
 //          https://www.boost.org/LICENSE_1_0.txt)
 
 module wsf.spec.scene;
+import wsf.spec.tileset;
+import wsf.serialization;
 
 /**
     The scene in-game
 */
 class Scene {
+
+    /**
+        The name of the scene
+    */
+    string name;
+
     /**
         Contains all the tilesets for this scene
     */
-    Tileset[string] tilesets;
+    Tileset tileset;
+
+    /**
+        Width of scene in pixels
+    */
+    uint width() {
+        return tilesX*tileWidth;
+    }
+
+    /**
+        Height of scene in pixels
+    */
+    uint height() {
+        return tilesY*tileHeight;
+    }
 
     /**
         Width of tiles
@@ -36,31 +58,21 @@ class Scene {
     uint tilesY;
 
     /**
+        Basis width for quads
+    */
+    uint quadBasisX;
+
+    /**
+        Basis height for quads
+    */
+    uint quadBasisY;
+
+    /**
         Layers
 
         index 0 = main layer
     */
     Layer[] layers;
-}
-
-/**
-    A tileset
-*/
-struct Tileset {
-    /**
-        Width of tileset texture
-    */
-    uint width;
-
-    /**
-        Height of tileset texture
-    */
-    uint height;
-
-    /**
-        8-bit RGBA color data
-    */
-    ubyte[] data;
 }
 
 /**
@@ -100,6 +112,7 @@ enum TileFlip : ubyte {
     A tile
 */
 struct Tile {
+
     /**
         X coordinate of tile
     */
@@ -118,5 +131,7 @@ struct Tile {
     /**
         Which direction to flip tile
     */
-    TileFlip flip;
+    @optional
+    TileFlip flip = TileFlip.None;
+
 }

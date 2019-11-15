@@ -67,6 +67,11 @@ private:
             case WSFTag.String:
                 readTag();
                 uint len = parseLength();
+                
+                // For empty strings
+                if (len == 0) return new Tag("");
+
+                // String is not empty
                 ubyte[] val = new ubyte[len];
                 stream.read(val);
                 return new Tag(cast(string)val);
@@ -105,7 +110,7 @@ private:
                 readTag();
                 ubyte[] val = new ubyte[8];
                 stream.read(val);
-                return new Tag(decode!float(val));
+                return new Tag(decode!double(val));
 
             default: 
                 throw new Exception("Unexpected tag");

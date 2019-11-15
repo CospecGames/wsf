@@ -91,7 +91,13 @@ public:
         return !isKindCompound() && !isKindArray();
     }
 
-    this(T)(T value) if (isNumeric!T || is(T == bool) || is(T : string)) {
+    this() { }
+
+    this(T)(T value) if (isFloatingPoint!T) {
+        this.value = cast(double)value;
+    }
+
+    this(T)(T value) if (isIntegral!T || is(T == bool) || is(T : string)) {
         this.value = value;
     }
 

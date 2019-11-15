@@ -18,6 +18,10 @@ private {
             static assert(0, "Input value was not a class, a struct or a pointer to either.");
         }
 
+        static if (is(T == class) || isPointer!T) {
+            if (data is null) return;
+        }
+
         static if (isPointer!T) {
             // Handle pointers
             serializeClassOrStruct!(PointerTarget!T)(*data, tag);
@@ -41,7 +45,7 @@ private {
                     enum protection = __traits(getProtection, member);
 
                     // Only allow public members that aren't ignored
-                    static if (protection == "public" && !hasUDA!(member, ignore)) {
+                    static if (!hasUDA!(member, ignore)) {
                         static if (memberName == "seq") {
 
                             // WSF has a seq tag used for sequential data, if our types match up then we can just use the Tag[] array as a frontend to wsf seq
@@ -64,6 +68,9 @@ private {
 
     void serializeAA(T)(T array, ref Tag tag) {
         foreach(name, member; array) {
+            static if (is(typeof(member) == class) || isPointer!(typeof(member)) || is(typeof(member) == string)) {
+                if (member is null) continue;
+            }
             serializeMember!(typeof(member))(member, tag, name);
         }
     }
@@ -83,12 +90,19 @@ private {
 
             // Handle final array values
             foreach(element; array) {
+                static if (is(ElementType!T == class) || isPointer!(ElementType!T) || is(ElementType!T == string)) {
+                    if (element is null) continue;
+                }
 
                 serializeMember!(typeof(element), true)(element, tag);
 
             }
 
         }
+    }
+
+    void serializeValue(T)(T data, ref Tag tag) {
+        tag = new Tag(data);
     }
 
     void serializeMember(T, bool array = false)(T data, ref Tag tag, string memberName = "") {
@@ -133,11 +147,13 @@ private {
             // Try to serialize everything else
             static if (array) {
 
-                tag ~= new Tag(data);
+                tag ~= new Tag();
+                serializeValue(data, tag[tag.length-1]);
 
             } else {
 
-                tag[memberName] = new Tag(data);
+                tag[memberName] = new Tag();
+                serializeValue(data, tag[memberName]);
 
             }
 
@@ -155,7 +171,18 @@ private {
     Create function with `void serialize(ref Tag tag)` signature to do custom serialization
 */
 Tag serializeWSF(T)(T data) if (is(T == class) || is(T == struct) || isPointer!T) {
-    Tag tag = Tag.emptyCompound();
-    serializeClassOrStruct!T(data, tag);
+    Tag tag = new Tag();
+    static if (is(T == class) || is(T == struct) || isPointer!T) {
+        tag = Tag.emptyCompound();
+        serializeClassOrStruct!T(data, tag);
+    } else static if(isAssociativeArray!T) {
+        tag = Tag.emptyCompound();
+        serializeAA!T(data, tag);
+    } else static if (isArray!T && !is(T : string)) {
+        tag = Tag.emptyArray();
+        serializeArray!T(data, tag);
+    } else {
+        serializeValue!T(data, tag);
+    }
     return tag;
 }

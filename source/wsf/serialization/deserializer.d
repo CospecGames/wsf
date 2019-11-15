@@ -32,7 +32,7 @@ private {
     void deserializeStructOrClass(T)(ref T object, ref Tag tag) {
         static if (hasStaticMember!(T, "deserialize")) {
             alias deserializerFunc = __traits(getMember, T, "deserialize");
-            static if (is(Parameters!deserializerFunc[0] == T) && is(Parameters!deserializerFunc[1] == Tag)) {
+            static if (is(Parameters!deserializerFunc[0] : T) && is(Parameters!deserializerFunc[1] == Tag)) {
                 T.deserialize(object, tag);
             } else {
                 static assert(0, "Invalid deserialization function! "~typeof(serializerFunc).stringof);
@@ -42,7 +42,7 @@ private {
 
                 alias member = __traits(getMember, object, memberName);
                 enum protection = __traits(getProtection, member);
-                static if (protection == "public" && !hasUDA!(member, ignore)) {
+                static if (!hasUDA!(member, ignore)) {
                     if (memberName !in tag) {
                         if (hasUDA!(member, optional)) continue;
                         else throw new Exception("Mandetory field "~memberName~" not present.");
@@ -69,14 +69,19 @@ private {
 
             // Sequential keys cannot be fetched from simple associative arrays
             if (key == "seq") continue;
+            if (key !in tag) continue;
+            if (tag.length == 0) continue;
             object[key] = ValueType!T.init;
             deserializeMember!(ValueType!T)(object[key], tag[key]);   
         }
     }
 
     void deserializeArray(T)(ref T object, ref Tag tag) {
-        object.length = tag.length;
+        static if (isDynamicArray!T) object.length = tag.length;
         foreach(i; 0..object.length) {
+            if (tag is null) continue;
+            if (tag.length == 0) continue;
+            if (i > tag.length) return;
             deserializeMember(object[i], tag[i]);
         }
     }
@@ -105,6 +110,6 @@ private {
 */
 T deserializeWSF(T)(Tag tag) {
     T val = newEmptyT!T;
-    deserializeStructOrClass!T(val, tag);
+    deserializeMember!T(val, tag);
     return val;
 }
